@@ -10,15 +10,19 @@ namespace MathFrontier.Impl.Executors
     /// </summary>
     public class CSharpExecutor : IFormulaEvaluator
     {
+        private readonly Type availableMethodsType;
         private readonly IVariableCoercionStrategy variableCoercisonStrategy;
 
         /// <summary>
         /// 构造函数
         /// </summary>
+        /// <param name="availableMethodsType">包含公式中可用静态方法的类型</param>
         /// <param name="variableCoercisonStrategy">默认变量值约束策略</param>
         public CSharpExecutor(
+            Type availableMethodsType,
             IVariableCoercionStrategy variableCoercisonStrategy)
         {
+            this.availableMethodsType = availableMethodsType;
             this.variableCoercisonStrategy = variableCoercisonStrategy;
         }
 
@@ -35,12 +39,14 @@ namespace MathFrontier.Impl.Executors
                 double result = await CSharpScript.EvaluateAsync<double>(
                     formula,
                     ScriptOptions.Default
-                        .WithImports("System")
+                        //.WithImports("System")
+                        .WithImports(availableMethodsType.Namespace)
                         .WithReferences(
                             typeof(System.Math).Assembly,
                             typeof(System.Double).Assembly,
                             typeof(Nullable<>).Assembly,
-                            typeof(CSharpFormulaGlobal).Assembly
+                            typeof(CSharpFormulaGlobal).Assembly,
+                            availableMethodsType.Assembly
                         ),
                     new CSharpFormulaGlobal(variableCoercisonStrategy, context)
                 );

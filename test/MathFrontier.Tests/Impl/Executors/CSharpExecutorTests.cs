@@ -32,7 +32,7 @@ namespace MathFrontier.Tests.Impl.Executors
         [InlineData("(await Var(\"参数\")+2)*3", 66.0)]
         //
         [InlineData("Math.Abs(-1.0)", 1.0)]
-        [InlineData("Math.Truncate(await Var(\"PI\"))", 3)]
+        [InlineData("Math.Abs(await Var(\"PI\"))", Math.PI)]
         public async Task EvalExpressionTest(string formula, double expected)
         {
             //var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
@@ -53,7 +53,7 @@ namespace MathFrontier.Tests.Impl.Executors
 
             //Assert.Equal(expected, actual);
 
-            var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
+            var evaluator = new CSharpExecutor(typeof(Math),new NullNotAllowedStrategy());
             var fakeVarProvider = A.Fake<IVariableProvider>();
             A.CallTo(() => fakeVarProvider.GetVarAsync("a"))
                 .Returns(10);
@@ -92,7 +92,7 @@ namespace MathFrontier.Tests.Impl.Executors
         [Fact]
         public async Task EvalNonExistingVariableTest()
         {
-            var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
+            var evaluator = new CSharpExecutor(typeof(Math),new NullNotAllowedStrategy());
             var fakeVarProvider = A.Fake<IVariableProvider>();
             A.CallTo(() => fakeVarProvider.GetVarAsync("a"))
                 .Returns(Task.FromResult<double?>(null));
@@ -138,7 +138,7 @@ namespace MathFrontier.Tests.Impl.Executors
         [Fact]
         public async Task IntThrowWhenEvalDivideByConstantZeroTest()
         {
-            var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
+            var evaluator = new CSharpExecutor(typeof(Math),new NullNotAllowedStrategy());
             var fakeVarProvider = A.Fake<IVariableProvider>();
             var context = new FormulaEvaluatingContext
             {
@@ -154,7 +154,7 @@ namespace MathFrontier.Tests.Impl.Executors
         [Fact]
         public async Task DoubleThrowWhenEvalDivideByZeroTest()
         {
-            var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
+            var evaluator = new CSharpExecutor(typeof(Math),new NullNotAllowedStrategy());
             var fakeVarProvider = A.Fake<IVariableProvider>();
             var context = new FormulaEvaluatingContext
             {
@@ -170,7 +170,7 @@ namespace MathFrontier.Tests.Impl.Executors
         [Fact]
         public async Task IntThrowWhenEvalDivideByZeroTest()
         {
-            var evaluator = new CSharpExecutor(new NullNotAllowedStrategy());
+            var evaluator = new CSharpExecutor(typeof(Math),new NullNotAllowedStrategy());
             var fakeVarProvider = A.Fake<IVariableProvider>();
             A.CallTo(() => fakeVarProvider.GetVarAsync("a"))
                 .Returns(0);

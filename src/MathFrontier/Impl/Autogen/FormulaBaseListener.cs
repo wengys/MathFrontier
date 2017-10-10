@@ -131,20 +131,6 @@ internal partial class FormulaBaseListener : IFormulaListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMethodInvok([NotNull] FormulaParser.MethodInvokContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>PropertyInvok</c>
-	/// labeled alternative in <see cref="FormulaParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterPropertyInvok([NotNull] FormulaParser.PropertyInvokContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>PropertyInvok</c>
-	/// labeled alternative in <see cref="FormulaParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitPropertyInvok([NotNull] FormulaParser.PropertyInvokContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>BracketsExpression</c>
 	/// labeled alternative in <see cref="FormulaParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -232,18 +218,6 @@ internal partial class FormulaBaseListener : IFormulaListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMethodParameter([NotNull] FormulaParser.MethodParameterContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="FormulaParser.propertyInvocation"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="FormulaParser.propertyInvocation"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="FormulaParser.variableReference"/>.
 	/// <para>The default implementation does nothing.</para>

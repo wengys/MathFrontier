@@ -2,8 +2,11 @@
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using MathFrontier.Exceptions;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace MathFrontier.Impl.Interpreters
@@ -16,7 +19,13 @@ namespace MathFrontier.Impl.Interpreters
     /// </remarks>
     public class FormulaCSInterpreter
     {
-        public string Interpret(string formula)
+        /// <summary>
+        /// 翻译公式
+        /// </summary>
+        /// <param name="formula">公式</param>
+        /// <param name="availableMethodsType">包含公式中可用静态方法的类型</param>
+        /// <returns></returns>
+        public string Interpret(string formula,Type availableMethodsType)
         {
             AntlrInputStream input = new AntlrInputStream(formula);
             FormulaLexer lexer = new FormulaLexer(input);
@@ -26,7 +35,7 @@ namespace MathFrontier.Impl.Interpreters
             FormulaParser parser = new FormulaParser(tokens);
             parser.RemoveErrorListeners();
             parser.AddErrorListener(ParserErrorListener.Instance);
-            FormulaCSListener listener = new FormulaCSListener();
+            FormulaCSListener listener = new FormulaCSListener(availableMethodsType);
 
             ParseTreeWalker walker = new ParseTreeWalker();
 
@@ -34,18 +43,32 @@ namespace MathFrontier.Impl.Interpreters
             return listener.Result;
         }
 
-        internal class MethodParamInfo
+        internal class MethodInfo
         {
+            public int CurrentParamCount { get; set; }
             public int Total { get; set; }
-            public int Current { get; set; }
+            public string MethodName { get; set; }
         }
 
         internal class FormulaCSListener : FormulaBaseListener
         {
-            private Stack<Stack<string>> opStacks = new Stack<Stack<string>>(); //符号栈
-            private Stack<MethodParamInfo> methodParamsStack = new Stack<MethodParamInfo>(); //方法栈
 
-            private StringBuilder resultBuilder = new StringBuilder();
+            private static readonly ConcurrentDictionary<Type, Dictionary<string, int>> availableMethodTypes
+                = new ConcurrentDictionary<Type, Dictionary<string, int>>();
+
+            private readonly Type availableMethodsType;
+            private readonly Stack<Stack<string>> opStacks = new Stack<Stack<string>>(); //符号栈
+            private readonly Stack<MethodInfo> methodStack = new Stack<MethodInfo>(); //方法栈
+
+            private readonly StringBuilder resultBuilder = new StringBuilder();
+
+            public FormulaCSListener(Type availableMethodsType)
+            {
+                this.availableMethodsType = availableMethodsType;
+                InitAvailableMethodTypes(availableMethodsType);
+            }
+
+            
 
             public string Result
             {
@@ -57,7 +80,7 @@ namespace MathFrontier.Impl.Interpreters
 
             public override void EnterMethodInvocation([NotNull] FormulaParser.MethodInvocationContext context)
             {
-                methodParamsStack.Push(new MethodParamInfo());
+                methodStack.Push(new MethodInfo());
                 opStacks.Push(new Stack<string>());
             }
 
@@ -69,29 +92,49 @@ namespace MathFrontier.Impl.Interpreters
 
             public override void EnterMethodName([NotNull] FormulaParser.MethodNameContext context)
             {
+                var methodName = context.GetText();
+                var methodParamCount = GetMethodParamCount(methodName);
+                var methodParamInfo = methodStack.Peek();
+                methodParamInfo.Total = methodParamCount;
+                methodParamInfo.MethodName = methodName;
                 resultBuilder.Append(context.GetText());
+            }
+
+            private int GetMethodParamCount(string methodName)
+            {
+                if (!availableMethodTypes.TryGetValue(this.availableMethodsType,out var availableMethodParamCounts)
+                    || !availableMethodParamCounts.TryGetValue(methodName,out var availableMethodParamCount)
+                    )
+                {
+                    throw new SyntaxErrorException("Parser", "不支持的方法: "+ methodName);
+                }
+                return availableMethodParamCount;
             }
 
             public override void EnterMethodParameterPart([NotNull] FormulaParser.MethodParameterPartContext context)
             {
                 resultBuilder.Append("(");
-                methodParamsStack.Peek().Total = context.ChildCount - 2; // 去掉括号，所以-2
             }
 
             public override void ExitMethodParameterPart([NotNull] FormulaParser.MethodParameterPartContext context)
             {
+                var methodInfo = methodStack.Peek();
+                if (methodInfo.CurrentParamCount!= methodInfo.Total)
+                {
+                    throw new SyntaxErrorException("Parser", $"参数数量错误: {methodInfo.MethodName} 需要 {methodInfo.Total} 个参数，实际 {methodInfo.CurrentParamCount} 个");
+                }
                 resultBuilder.Append(")");
-                methodParamsStack.Pop();
+                methodStack.Pop();
                 TryPopOp();
             }
 
             public override void EnterMethodParameter([NotNull] FormulaParser.MethodParameterContext context)
             {
-                if (methodParamsStack.Peek().Current > 0)
+                if (methodStack.Peek().CurrentParamCount > 0)
                 {
                     resultBuilder.Append(",");
                 }
-                methodParamsStack.Peek().Current++;
+                methodStack.Peek().CurrentParamCount++;
             }
 
             public override void EnterFormula([NotNull] FormulaParser.FormulaContext context)
@@ -150,12 +193,12 @@ namespace MathFrontier.Impl.Interpreters
                 TryPopOp();
             }
 
-            public override void ExitPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context)
-            {
-                var propertyName = context.GetText();
-                resultBuilder.Append(propertyName);
-                TryPopOp();
-            }
+            //public override void ExitPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context)
+            //{
+            //    var propertyName = context.GetText();
+            //    resultBuilder.Append(propertyName);
+            //    TryPopOp();
+            //}
 
             public override void EnterExpressionPlus([NotNull] FormulaParser.ExpressionPlusContext context)
             {
@@ -185,6 +228,20 @@ namespace MathFrontier.Impl.Interpreters
                     var op = opStack.Pop();
                     resultBuilder.Append(op);
                 }
+            }
+
+            private static void InitAvailableMethodTypes(Type availableMethodsType)
+            {
+                availableMethodTypes.GetOrAdd(availableMethodsType, (t) =>
+                {
+                    var availableMethodParamCounts = new Dictionary<string, int>();
+                    var avaibableMethods = t.GetMethods(BindingFlags.Static | BindingFlags.Public);
+                    foreach (var avaibableMethod in avaibableMethods)
+                    {
+                        availableMethodParamCounts[t.Name + "." + avaibableMethod.Name]=avaibableMethod.GetParameters().Length; // 不支持重载
+                    }
+                    return availableMethodParamCounts;
+                });
             }
         }
 

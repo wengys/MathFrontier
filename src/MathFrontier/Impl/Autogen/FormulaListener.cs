@@ -113,18 +113,6 @@ internal interface IFormulaListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitMethodInvok([NotNull] FormulaParser.MethodInvokContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>PropertyInvok</c>
-	/// labeled alternative in <see cref="FormulaParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterPropertyInvok([NotNull] FormulaParser.PropertyInvokContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>PropertyInvok</c>
-	/// labeled alternative in <see cref="FormulaParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitPropertyInvok([NotNull] FormulaParser.PropertyInvokContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>BracketsExpression</c>
 	/// labeled alternative in <see cref="FormulaParser.expression"/>.
 	/// </summary>
@@ -198,16 +186,6 @@ internal interface IFormulaListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitMethodParameter([NotNull] FormulaParser.MethodParameterContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="FormulaParser.propertyInvocation"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="FormulaParser.propertyInvocation"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitPropertyInvocation([NotNull] FormulaParser.PropertyInvocationContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="FormulaParser.variableReference"/>.
 	/// </summary>
