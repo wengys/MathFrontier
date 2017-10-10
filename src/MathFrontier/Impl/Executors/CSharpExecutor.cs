@@ -32,7 +32,7 @@ namespace MathFrontier.Impl.Executors
         /// <param name="formula">表达式</param>
         /// <param name="context">执行上下文</param>
         /// <returns></returns>
-        public async Task<double?> EvalAsync(string formula, FormulaEvaluatingContext context)
+        public async Task<double> EvalAsync(string formula, FormulaEvaluatingContext context)
         {
             try
             {

@@ -1,5 +1,6 @@
 ﻿using MathFrontier.Impl.Executors;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MathFrontier.Impl.Interpreters;
 
@@ -33,7 +34,7 @@ namespace MathFrontier.Impl
         /// <param name="formula">表达式</param>
         /// <param name="context">执行上下文</param>
         /// <returns></returns>
-        public Task<double?> EvalAsync(string formula, FormulaEvaluatingContext context)
+        public Task<double> EvalAsync(string formula, FormulaEvaluatingContext context)
         {
             var scriptToExecute = interpreter.Interpret(formula, availableMethodsType);
             return executor.EvalAsync(scriptToExecute, context);

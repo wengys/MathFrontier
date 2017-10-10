@@ -17,7 +17,7 @@ namespace MathFrontier
         /// <returns></returns>
         /// <exception cref="DivideByZeroException">除数为0</exception>
         /// <exception cref="CoerceVariableFailException">变量值约束异常</exception>
-        Task<double?> EvalAsync(string formula, FormulaEvaluatingContext context);
+        Task<double> EvalAsync(string formula, FormulaEvaluatingContext context);
     }
 
     /// <summary>
