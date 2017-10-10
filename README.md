@@ -25,14 +25,17 @@ double result = await formulaEvaluator.EvalAsync("1+${Foo}", context);
 1.234 // 浮点数
 100%  // 百分数
 ```
+
 * 支持变量
 ```
 ${变量}
 ```
+
 * 支持加减乘除以及任意层次的括号
 ```
 (1+(2-3))*4/5
 ```
+
 * 支持方法调用
 ```
 Math.Abs(${变量})
