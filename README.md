@@ -41,6 +41,8 @@ ${变量}
 Math.Abs(${变量})
 ```
 
+具体语法参见[ANTLR文件](doc_reference\Formula.g4)
+
 ## 线程安全
 
 `FormulaEvaluator`为线程安全的，可以在多个线程中使用
